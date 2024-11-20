@@ -1,70 +1,56 @@
-# Getting Started with Create React App
+# Profile Cards App - React Task
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+In this task, you will build a **Profile Cards** app using React. This app will render a list of user profiles, displaying each user's name, age, location, and online status. You'll practice key React concepts like **components**, **JSX**, **props**, **conditional rendering**, and **rendering lists**.
 
-In the project directory, you can run:
+## Instructions
 
-### `npm start`
+### Task 1: Display a Heading in `App.js`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+In the `App.js` file, there is a placeholder for a heading. Your task is to:
+- **Display a heading** with the text "Profile Cards" at the top of the page. Use an `<h1>` tag.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Task 2: Create and Render `ProfileList` Component
 
-### `npm test`
+- You will need to create a `ProfileList` component.
+- This component will receive a `profiles` array (passed from `App.js`) as a prop and use **`map()`** to render a `ProfileCard` for each user in the array.
+- For now, the `ProfileList` component is just a placeholder. Your job is to:
+  - Use the `.map()` function to loop through the `profiles` array.
+  - For each profile, render a `ProfileCard` and pass the necessary data (name, age, location, isOnline) as props to `ProfileCard`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Task 3: Display Profile Data in `ProfileCard` Component
 
-### `npm run build`
+The `ProfileCard` component is a placeholder where you need to display the profile's details. Your task is to:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Display the user’s name**:
+   - Use an `<h2>` tag to display the `name` prop.
+   
+2. **Display the user’s age**:
+   - Use a `<p>` tag to display the `age` prop. For example: `Age: 25`.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. **Display the user's location**:
+   - Use a `<p>` tag to display the `location` prop. If the `location` is missing, display the text **"Location: Unknown"**.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. **Display the user’s online status**:
+   - Create a **status dot** (a small circle) that changes color based on the `isOnline` prop.
+   - If `isOnline` is **true**, make the dot **green**.
+   - If `isOnline` is **false**, make the dot **gray**.
+   - Also, display the text **"Online"** or **"Offline"** based on the `isOnline` prop.
 
-### `npm run eject`
+### Task 4: Structure the App
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. In `App.js`, make sure to:
+   - **Display the heading** for the app using the `<h1>` tag.
+   - **Render the `ProfileList` component** and pass the `profiles` array to it as a prop.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Data Structure (`data.js`)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The `profiles` data is provided in the `data.js` file. Each profile has the following structure:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```js
+[
+  { id: 1, name: "Alice", age: 25, location: "New York", isOnline: true },
+  { id: 2, name: "Bob", age: 30, location: "London", isOnline: false },
+  { id: 3, name: "Charlie", age: 28, location: "Sydney", isOnline: true }
+]

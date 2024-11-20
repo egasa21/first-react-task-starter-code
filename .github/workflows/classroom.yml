@@ -1,0 +1,69 @@
+name: Autograding Tests
+
+on:
+  - push
+  - workflow_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  autograding:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run React tests and generate a results file
+      - name: Run tests
+        id: run-tests
+        run: |
+          npm test -- --ci --reporter jest-junit --outputFile=test-results.xml
+        env:
+          CI: true # Ensures that tests run in CI mode
+
+      # Step 5: Install xmlstarlet (for parsing test results)
+      - name: Install xmlstarlet
+        run: sudo apt-get install -y xmlstarlet
+
+      # Step 6: Parse test results and calculate the score
+      - name: Parse test results
+        id: parse-results
+        run: |
+          # Count the total and passed test cases
+          total_tests=$(xmlstarlet sel -t -v 'count(//testcase)' test-results.xml)
+          passed_tests=$(xmlstarlet sel -t -v 'count(//testcase[not(failure)])' test-results.xml)
+          max_score=100
+
+          # Calculate the score
+          score=$((passed_tests * max_score / total_tests))
+
+          # Output the result summary
+          result_summary="Total tests: $total_tests\nPassed tests: $passed_tests\nScore: $score/$max_score\n"
+          echo -e "$result_summary"
+
+          # Set output for subsequent steps (if needed)
+          echo "score=$score" >> $GITHUB_ENV
+          echo "Total tests: $total_tests, Passed tests: $passed_tests, Score: $score/$max_score"
+
+      # Step 7: Display results summary in the workflow logs
+      - name: Display results summary
+        run: |
+          echo "Autograding Results:"
+          echo "==================="
+          echo "Total tests: $total_tests"
+          echo "Passed tests: $passed_tests"
+          echo "Score: $score/$max_score"
