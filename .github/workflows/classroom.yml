@@ -13,57 +13,68 @@ jobs:
   autograding:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' 
+          node-version: '20'
 
-      # Step 3: Install project dependencies
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Run React tests and generate a results file
-      - name: Run tests
-        id: run-tests
+      - name: Install xml2js
+        run: npm install xml2js
+
+      - name: Run tests and generate results
         run: |
-          npm test -- --ci --reporter jest-junit --outputFile=test-results.xml
+          npm test -- --ci --reporters=default --reporters=jest-junit
         env:
-          CI: true # Ensures that tests run in CI mode
+          JEST_JUNIT_OUTPUT: junit.xml
 
-      # Step 5: Install xmlstarlet (for parsing test results)
-      - name: Install xmlstarlet
-        run: sudo apt-get install -y xmlstarlet
+      - name: List files to verify test-results.xml
+        run: ls -la
 
-      # Step 6: Parse test results and calculate the score
-      - name: Parse test results
-        id: parse-results
+      - name: Create score calculation script
         run: |
-          # Count the total and passed test cases
-          total_tests=$(xmlstarlet sel -t -v 'count(//testcase)' test-results.xml)
-          passed_tests=$(xmlstarlet sel -t -v 'count(//testcase[not(failure)])' test-results.xml)
-          max_score=100
+          echo 'const fs = require("fs");' > calculate-score.js
+          echo 'const xml2js = require("xml2js");' >> calculate-score.js
+          echo 'const parser = new xml2js.Parser();' >> calculate-score.js
+          echo 'const maxScore = 100;' >> calculate-score.js
+          echo 'fs.readFile("junit.xml", (err, data) => {' >> calculate-score.js  # Using junit.xml
+          echo '  if (err) {' >> calculate-score.js
+          echo '    console.error("Failed to read test results file.");' >> calculate-score.js
+          echo '    process.exit(1);' >> calculate-score.js
+          echo '  }' >> calculate-score.js
+          echo '  parser.parseString(data, (err, result) => {' >> calculate-score.js
+          echo '    if (err) {' >> calculate-score.js
+          echo '      console.error("Failed to parse test results XML.");' >> calculate-score.js
+          echo '      process.exit(1);' >> calculate-score.js
+          echo '    }' >> calculate-score.js
+          echo '    const testCases = result.testsuites.testsuite.flatMap(suite => suite.testcase || []);' >> calculate-score.js
+          echo '    const totalTests = testCases.length;' >> calculate-score.js
+          echo '    const passedTests = testCases.filter(tc => !tc.failure).length;' >> calculate-score.js
+          echo '    const score = Math.round((passedTests / totalTests) * maxScore);' >> calculate-score.js
+          echo '    console.log(`Total tests: ${totalTests}`);' >> calculate-score.js
+          echo '    console.log(`Passed tests: ${passedTests}`);' >> calculate-score.js
+          echo '    console.log(`Score: ${score}/${maxScore}`);' >> calculate-score.js
+          echo '    fs.writeFileSync("score.txt", score.toString());' >> calculate-score.js
+          echo '  });' >> calculate-score.js
+          echo '});' >> calculate-score.js
 
-          # Calculate the score
-          score=$((passed_tests * max_score / total_tests))
+      - name: Calculate test score
+        run: node calculate-score.js
 
-          # Output the result summary
-          result_summary="Total tests: $total_tests\nPassed tests: $passed_tests\nScore: $score/$max_score\n"
-          echo -e "$result_summary"
+      - name: Upload score
+        uses: actions/upload-artifact@v3
+        with:
+          name: score
+          path: score.txt
 
-          # Set output for subsequent steps (if needed)
-          echo "score=$score" >> $GITHUB_ENV
-          echo "Total tests: $total_tests, Passed tests: $passed_tests, Score: $score/$max_score"
-
-      # Step 7: Display results summary in the workflow logs
-      - name: Display results summary
+      - name: Check for score file
         run: |
-          echo "Autograding Results:"
-          echo "==================="
-          echo "Total tests: $total_tests"
-          echo "Passed tests: $passed_tests"
-          echo "Score: $score/$max_score"
+          if [ ! -f score.txt ]; then
+            echo "Score file not generated. Exiting with failure."
+            exit 1
+          fi
